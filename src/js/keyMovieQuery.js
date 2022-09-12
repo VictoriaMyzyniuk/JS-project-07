@@ -1,11 +1,14 @@
 import KeyMovieFetch from './keyMovieFetch';
 import { addToHTML } from './gallery-popular-films';
 import { GENRES_FULL_INFO } from './gallery-popular-films';
+import { pagination } from './pagination';
 
 const refs = {
   searchForm: document.querySelector('.header-search-form'),
   gallery: document.querySelector('.gallery'),
-  seachMessage: document.querySelector('.header-message'),
+  searchMessage: document.querySelector('.header-message'),
+  page: document.querySelector('a[data-page="home"]'),
+  paginationCont: document.getElementById('tui-pagination-container'),
   // loadMoreBtn: document.querySelector('.load-more'),
 };
 
@@ -17,14 +20,18 @@ refs.searchForm.addEventListener('submit', onSearchSubmit);
 async function onSearchSubmit(evt) {
   try {
     evt.preventDefault();
+    evt.stopPropagation();
+    refs.paginationCont.classList.remove('is-hidden');
     refs.gallery.innerHTML = '';
+    keyMovieFetch.resetPage();
     console.log(evt.currentTarget.elements.searchQuery.value);
     keyMovieFetch.value = evt.currentTarget.elements.searchQuery.value;
-    keyMovieFetch.resetPage();
     if (keyMovieFetch.value === '') {
       //   refs.loadMoreBtn.classList.add('is-hidden');
-      refs.seachMessage.classList.remove('is-hidden');
-      refs.seachMessage.innerHTML =
+      refs.searchMessage.classList.remove('is-hidden');
+      refs.paginationCont.classList.add('is-hidden');
+
+      refs.searchMessage.innerHTML =
         'I can`t find an empty request. Please input something.';
       // console.log('I can`t find an empty request. Please input something.');
       refs.gallery.innerHTML = '';
@@ -33,11 +40,13 @@ async function onSearchSubmit(evt) {
 
     const fetch = await keyMovieFetch.fetchMovie(keyMovieFetch.value);
     console.log('fetch', fetch);
-    await createMarkup(fetch);
-    console.log(fetch);
+    // pagination.reset(fetch.results);
+    await createMarkupKey(fetch);
+    // console.log(fetch);
     if (fetch.total_results === 0) {
-      refs.seachMessage.classList.remove('is-hidden');
-      refs.seachMessage.innerHTML =
+      refs.searchMessage.classList.remove('is-hidden');
+      refs.paginationCont.classList.add('is-hidden');
+      refs.searchMessage.innerHTML =
         'Search result not successful. Enter the correct movie name and try again.';
       refs.gallery.innerHTML = '';
       return;
@@ -51,16 +60,24 @@ async function onSearchSubmit(evt) {
   }
 }
 
-// function onLoadMoreClick() {
-//   renderGallery();
-//   refs.gallery.innerHTML = '';
-//   //   refs.loadMoreBtn.classList.remove('is-hidden');
+// if (refs.page.classList.contains('header-list__link--current')) {
+//   onLoadMore();
 // }
 
-async function renderGallery() {
-  const fetch = await keyMovieFetch.fetchMovie(keyMovieFetch.value);
-  await createMarkup(fetch);
-  //   console.log(fetch);
+// async function onLoadMore() {
+//   await renderGallery();
+//   // console.log('gallery in onloadmore', gallery);
+//   // pagination.reset(total_films);
+// }
+
+async function renderGalleryKey() {
+  // refs.gallery.innerHTML = '';
+  if (keyMovieFetch.value !== '') {
+    const fetch = await keyMovieFetch.fetchMovie(keyMovieFetch.value);
+    console.log('fetch in render', fetch);
+    await createMarkupKey(fetch);
+    // pagination.reset(fetch);
+  } else return;
 }
 
 function matchGenres(genreIdArr, genresFool) {
@@ -76,8 +93,9 @@ function matchGenres(genreIdArr, genresFool) {
   return result;
 }
 
-async function createMarkup(data) {
-  refs.seachMessage.classList.add('is-hidden');
+async function createMarkupKey(data) {
+  refs.gallery.innerHTML = '';
+  refs.searchMessage.classList.add('is-hidden');
   //   const films = data.results;
   console.log();
   const markup = data.results
@@ -107,3 +125,11 @@ async function createMarkup(data) {
     .join('');
   addToHTML(markup);
 }
+
+pagination.on('afterMove', event => {
+  const currentPage = event.page;
+  console.log(currentPage);
+  console.log(keyMovieFetch.page);
+  keyMovieFetch.page = currentPage;
+  renderGalleryKey();
+});
