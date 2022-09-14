@@ -66,7 +66,14 @@ export function renderModalOneFilm(modalFilm) {
     genres,
     overview,
   } = modalFilm;
-
+  let poster_path;
+  if (path === null || path === undefined) {
+    console.log(null);
+    poster_path = '/uc4RAVW1T3T29h6OQdr7zu4Blui.jpg';
+    // console.log('poster_path', poster_path);
+  } else {
+    poster_path = path;
+  }
   const genresList = genres.map(item => item.name).join(', ');
 
   const markupModalOneFilm = `<div class="film-card__wrapper">
