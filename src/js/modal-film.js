@@ -77,7 +77,7 @@ export function renderModalOneFilm(modalFilm) {
   const genresList = genres.map(item => item.name).join(', ');
 
   const markupModalOneFilm = `<div class="film-card__wrapper">
-        <div class="film-card__image-block">
+        <div c``lass="film-card__image-block">
         <img
           class="film-card__image"
           src="https://image.tmdb.org/t/p/original${poster_path}"
